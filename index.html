@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rastreador de Estudos</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a1a;background:#f5f5f0;font-size:16px;min-height:100vh}
+.app{max-width:680px;margin:0 auto;padding:1.25rem .875rem}
+.tabs{display:flex;gap:2px;margin-bottom:1.25rem;background:#e8e8e3;border-radius:12px;padding:4px}
+.tab{flex:1;padding:9px 8px;font-size:13px;font-weight:500;border:none;background:transparent;color:#666;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tab.active{background:#fff;color:#1a1a1a;border:0.5px solid rgba(0,0,0,0.1)}
+.section{display:none}.section.active{display:block}
+.fl{font-size:12px;font-weight:500;color:#666;letter-spacing:.04em;margin-bottom:8px;text-transform:uppercase}
+.card{background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem}
+.pill{padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;background:#fff;color:#1a1a1a;transition:all .12s;min-height:44px;display:flex;align-items:center;gap:4px}
+.pill:hover{background:#f0f0eb}
+.pill.sel{background:#E1F5EE;border-color:#1D9E75;color:#085041;font-weight:500}
+.pill.psel{background:#FAEEDA;border-color:#BA7517;color:#412402;font-weight:500}
+.pill.ssel{background:#EEEDFE;border-color:#534AB7;color:#3C3489;font-weight:500}
+.tl{font-size:11px;font-weight:500;padding:3px 8px;border-radius:8px;display:inline-block;margin-bottom:6px}
+.tl-a{background:#E1F5EE;color:#085041}
+.tl-p{background:#FAEEDA;color:#412402}
+.tl-s{background:#EEEDFE;color:#3C3489}
+.mood-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+.mb{padding:12px 8px;border:1px solid #ddd;border-radius:12px;font-size:13px;cursor:pointer;background:#fff;color:#1a1a1a;text-align:center;transition:all .12s;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.mb:hover{background:#f0f0eb}
+.mb.sh{background:#FCEBEB;border-color:#A32D2D;color:#A32D2D}
+.mb.so{background:#FAEEDA;border-color:#BA7517;color:#BA7517}
+.mb.se{background:#E1F5EE;border-color:#1D9E75;color:#085041}
+.rec-row{display:flex;flex-direction:column;gap:6px;margin-bottom:1.25rem}
+.rb{padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;background:#fff;color:#1a1a1a;text-align:left;transition:all .12s;min-height:44px}
+.rb:hover{background:#f0f0eb}
+.rb.sel{background:#EEEDFE;border-color:#534AB7;color:#3C3489;font-weight:500}
+.tc{padding:10px 14px;border:1px solid #ddd;border-radius:20px;font-size:13px;cursor:pointer;background:#fff;color:#1a1a1a;transition:all .12s;min-height:44px}
+.tc:hover{background:#f0f0eb}
+.tc.sel{background:#E1F5EE;border-color:#1D9E75;color:#085041;font-weight:500}
+.submit-btn{width:100%;padding:14px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;transition:opacity .15s;margin-top:.5rem;min-height:50px}
+.submit-btn:hover{opacity:.88}
+.submit-btn:disabled{opacity:.35;cursor:not-allowed}
+.db{background:#f5f5f0;border-left:3px solid #1D9E75;padding:1rem;margin-bottom:1.25rem;display:none}
+.db.vis{display:block}
+.db-purple{border-left-color:#534AB7}
+.db-amber{border-left-color:#BA7517}
+.di{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#fff;color:#1a1a1a;margin-top:8px;font-family:inherit}
+.di:focus{outline:none;border-color:#1D9E75}
+.sp{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.spill{padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;background:#fff;color:#666;transition:all .12s;min-height:44px;display:flex;align-items:center}
+.spill:hover{background:#f0f0eb}
+.spill.sel{background:#E1F5EE;border-color:#1D9E75;color:#085041}
+.eb{padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;background:#fff;color:#1a1a1a;transition:all .12s;min-height:44px}
+.eb:hover{background:#f0f0eb}
+.eb.sel{background:#EEEDFE;border-color:#534AB7;color:#534AB7;font-weight:500}
+.hid{display:none}
+.rc{border-radius:12px;padding:1.25rem;margin-bottom:.75rem;border:1px solid}
+.rc.today{background:#E1F5EE;border-color:#5DCAA5}
+.rc.week{background:#f5f5f0;border-color:#ddd}
+.rc.alert{background:#FAEEDA;border-color:#EF9F27}
+.rc.level{background:#FCEBEB;border-color:#F09595}
+.rc.rest{background:#EEEDFE;border-color:#AFA9EC}
+.rt{font-size:11px;font-weight:500;padding:2px 8px;border-radius:8px;display:inline-block;margin-bottom:8px}
+.rt.today{background:#9FE1CB;color:#04342C}
+.rt.week{background:#fff;color:#666}
+.rt.alert{background:#FAC775;color:#412402}
+.rt.level{background:#F7C1C1;color:#501313}
+.rt.rest{background:#CECBF6;color:#26215C}
+.rtitle{font-size:15px;font-weight:500;margin-bottom:6px;color:#1a1a1a}
+.rdet{font-size:12px;color:#666;margin-bottom:6px}
+.rdesc{font-size:13px;color:#555;line-height:1.6}
+.ract{font-size:13px;margin-top:6px;line-height:1.6;color:#1a1a1a}
+.rtech{font-size:12px;margin-top:8px;padding:6px 10px;background:#fff;border-radius:8px;color:#666}
+.rtech strong{color:#1a1a1a}
+.rrefl{font-size:12px;margin-top:8px;padding:8px 10px;background:#fff;border-radius:8px;border-left:2px solid #534AB7;color:#555;font-style:italic}
+.rest-tip{font-size:13px;margin-top:10px;padding:10px 12px;background:#fff;border-radius:8px;border-left:2px solid #1D9E75;color:#555;line-height:1.6}
+.rest-tip strong{color:#085041}
+.done-btn{width:100%;margin-top:10px;padding:10px;background:transparent;border:1px solid #1D9E75;border-radius:8px;font-size:13px;color:#085041;cursor:pointer;font-weight:500;transition:all .12s;min-height:44px}
+.done-btn:hover{background:#E1F5EE}
+.empty-state{text-align:center;padding:3rem 1rem;color:#999}
+.sl{font-size:12px;font-weight:500;color:#666;letter-spacing:.04em;text-transform:uppercase;margin:1rem 0 8px}
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
+.sc{background:#f5f5f0;border-radius:8px;padding:.875rem;text-align:center}
+.sn{font-size:24px;font-weight:500;color:#1a1a1a}
+.slb{font-size:12px;color:#666;margin-top:2px}
+.si{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:0.5px solid #e8e8e3;font-size:13px;gap:8px}
+.si:last-child{border-bottom:none}
+.si-actions{display:flex;gap:6px;flex-shrink:0;margin-top:2px}
+.si-btn{padding:6px 12px;border:1px solid #ddd;border-radius:8px;font-size:12px;cursor:pointer;background:transparent;color:#666;transition:all .12s;min-height:36px}
+.si-btn:hover{background:#f0f0eb}
+.si-btn.del:hover{background:#FCEBEB;border-color:#F09595;color:#A32D2D}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+.ba{background:#E1F5EE;color:#085041}
+.bp{background:#FAEEDA;color:#412402}
+.bs{background:#EEEDFE;color:#3C3489}
+.hmw{margin-bottom:1.25rem}
+.hmr{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.hml{font-size:12px;color:#666;width:76px;flex-shrink:0;text-align:right}
+.hmd{display:flex;gap:3px;flex-wrap:wrap;align-items:flex-end}
+.dot{border-radius:3px;flex-shrink:0;background:#e8e8e3}
+.dot-h{background:#E24B4A}.dot-o{background:#EF9F27}.dot-e{background:#1D9E75}
+.dot-sm{width:10px;height:10px}.dot-md{width:14px;height:14px}.dot-lg{width:18px;height:18px}
+.hleg{display:flex;gap:10px;margin-top:8px;justify-content:flex-end;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:4px;font-size:11px;color:#666}
+.ld{width:10px;height:10px;border-radius:2px}
+.narc{background:#f5f5f0;border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:13px;line-height:1.6;color:#555}
+.narc strong{color:#1a1a1a}
+.gap-banner{background:#EEEDFE;border:1px solid #AFA9EC;border-radius:8px;padding:.875rem 1rem;font-size:13px;color:#26215C;margin-bottom:1rem;display:none}
+.overlay{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.5rem;margin-bottom:1rem;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:none}
+.overlay.vis{display:block}
+.rta{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;color:#1a1a1a;resize:vertical;min-height:80px}
+.rta:focus{outline:none;border-color:#534AB7}
+.btn-row{display:flex;gap:8px;margin-top:.75rem;flex-wrap:wrap}
+.bskip{padding:10px 16px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;background:transparent;color:#666;min-height:44px}
+.bsave{padding:10px 16px;border:none;border-radius:8px;font-size:13px;cursor:pointer;background:#534AB7;color:#fff;font-weight:500;min-height:44px}
+.bdanger{padding:10px 16px;border:none;border-radius:8px;font-size:13px;cursor:pointer;background:#A32D2D;color:#fff;font-weight:500;min-height:44px}
+.onboard{text-align:center;padding:2rem 1rem}
+.onboard-icon{width:48px;height:48px;background:#E1F5EE;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+.interval-badge{font-size:11px;padding:2px 8px;border-radius:20px;background:#fff;color:#666;margin-left:6px;border:1px solid #e0e0e0}
+@media(max-width:480px){
+  .pill{font-size:12px;padding:8px 10px}
+  .tab{font-size:12px;padding:8px 6px}
+  .mood-row{gap:6px}
+  .mb{padding:10px 6px;min-height:64px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="gap-banner" class="gap-banner"></div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('register')">Registrar</button>
+    <button class="tab" onclick="switchTab('review')">Revisar</button>
+    <button class="tab" onclick="switchTab('pattern')">Padrão</button>
+    <button class="tab" onclick="switchTab('report')">Relatório</button>
+  </div>
+
+  <div id="tab-register" class="section active">
+    <div class="overlay" id="onboard-overlay">
+      <div class="onboard">
+        <div class="onboard-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div style="font-size:18px;font-weight:500;margin-bottom:.75rem;color:#1a1a1a">Rastreador de estudos</div>
+        <div style="font-size:14px;color:#666;line-height:1.7;max-width:400px;margin:0 auto 1.5rem">Registre cada sessão de estudo e receba recomendações baseadas em ciência da aprendizagem — quando revisar, como revisar, e o que o seu cérebro precisa agora.</div>
+        <button class="submit-btn" style="max-width:200px;margin:0 auto" onclick="dismissOnboard()">Começar</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="refl-overlay">
+      <div style="font-size:11px;font-weight:500;color:#534AB7;letter-spacing:.06em;margin-bottom:12px">REFLEXÃO DA SESSÃO</div>
+      <div style="font-size:16px;font-weight:500;margin-bottom:.75rem;line-height:1.5;color:#1a1a1a" id="refl-q"></div>
+      <div style="font-size:13px;color:#666;margin-bottom:1rem">Opcional — leva menos de 1 minuto.</div>
+      <textarea class="rta" id="refl-input" placeholder="Escreva aqui..."></textarea>
+      <div class="btn-row">
+        <button class="bskip" onclick="finishSession(false)">Pular</button>
+        <button class="bsave" onclick="finishSession(true)">Salvar</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="confirm-overlay">
+      <div style="font-size:15px;font-weight:500;margin-bottom:8px;color:#1a1a1a">Apagar esta sessão?</div>
+      <div style="font-size:13px;color:#666;margin-bottom:1rem">Esta ação não pode ser desfeita.</div>
+      <div class="btn-row">
+        <button class="bskip" onclick="cancelDelete()">Cancelar</button>
+        <button class="bdanger" onclick="confirmDelete()">Apagar</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="reviewed-overlay">
+      <div style="font-size:11px;font-weight:500;color:#1D9E75;letter-spacing:.06em;margin-bottom:12px">MARCAR COMO REVISADO</div>
+      <div style="font-size:15px;font-weight:500;margin-bottom:4px;color:#1a1a1a" id="rev-title"></div>
+      <div style="font-size:13px;color:#666;margin-bottom:1rem" id="rev-detail"></div>
+      <div class="fl">Quando foi a hora de usar, o que aconteceu?</div>
+      <div class="rec-row" id="rev-rec-btns">
+        <button class="rb" onclick="selRevRec(this,2,'ind')">Lembrei sozinho, sem precisar pensar</button>
+        <button class="rb" onclick="selRevRec(this,2,'eff')">Lembrei, mas precisei de esforço</button>
+        <button class="rb" onclick="selRevRec(this,1,'part')">Só lembrei depois de ver ou ouvir de novo</button>
+        <button class="rb" onclick="selRevRec(this,0,'fail')">Não lembrei</button>
+      </div>
+      <div class="fl">Como você revisou?</div>
+      <div class="pills" id="rev-tech-pills">
+        <button class="pill" data-type="active" data-name="Flashcard / Anki" onclick="selRevTech(this)">Flashcard / Anki</button>
+        <button class="pill" data-type="active" data-name="Me testei" onclick="selRevTech(this)">Me testei</button>
+        <button class="pill" data-type="active" data-name="Expliquei em voz alta" onclick="selRevTech(this)">Expliquei em voz alta</button>
+        <button class="pill" data-type="active" data-name="Escrevi / traduzi sem olhar" onclick="selRevTech(this)">Escrevi / traduzi sem olhar</button>
+        <button class="pill" data-type="semi" data-name="Shadowing" onclick="selRevTech(this)">Shadowing</button>
+        <button class="pill" data-type="semi" data-name="Pratiquei com alguém" onclick="selRevTech(this)">Pratiquei com alguém</button>
+        <button class="pill" data-type="passive" data-name="Assisti / ouvi" onclick="selRevTech(this)">Assisti / ouvi</button>
+        <button class="pill" data-type="passive" data-name="Li um texto" onclick="selRevTech(this)">Li um texto</button>
+        <button class="pill" data-type="passive" data-name="Reli anotações" onclick="selRevTech(this)">Reli anotações</button>
+      </div>
+      <div class="fl">Quanto tempo?</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem" id="rev-time-chips">
+        <button class="tc" onclick="selRevTime(this,15)">15 min</button>
+        <button class="tc" onclick="selRevTime(this,30)">30 min</button>
+        <button class="tc" onclick="selRevTime(this,45)">45 min</button>
+        <button class="tc" onclick="selRevTime(this,60)">60 min</button>
+        <button class="tc" onclick="selRevTime(this,90)">90+ min</button>
+      </div>
+      <div class="fl">Como foi?</div>
+      <div class="mood-row" id="rev-mood-btns">
+        <button class="mb" onclick="selRevMood(this,'hard')"><span style="font-size:20px">&#128543;</span>Difícil</button>
+        <button class="mb" onclick="selRevMood(this,'ok')"><span style="font-size:20px">&#128528;</span>OK</button>
+        <button class="mb" onclick="selRevMood(this,'easy')"><span style="font-size:20px">&#128512;</span>Fácil</button>
+      </div>
+      <button class="submit-btn" id="rev-submit" onclick="submitReviewed()" disabled>Confirmar revisão</button>
+      <button class="bskip" style="width:100%;margin-top:8px;text-align:center" onclick="cancelReviewed()">Cancelar</button>
+    </div>
+
+    <div id="form-body">
+      <div class="card">
+        <div class="fl">O que você estudou?</div>
+        <div class="pills" id="content-pills">
+          <button class="pill" onclick="selContent(this,'Vocabulário','productive')">Vocabulário</button>
+          <button class="pill" onclick="selContent(this,'Gramática','productive')">Gramática</button>
+          <button class="pill" onclick="selContent(this,'Pronúncia','productive')">Pronúncia</button>
+          <button class="pill" onclick="selContent(this,'Listening','input')">Listening</button>
+          <button class="pill" onclick="selContent(this,'Reading','input')">Reading</button>
+          <button class="pill" onclick="selContent(this,'Speaking','productive')">Speaking</button>
+          <button class="pill" onclick="selContent(this,'Writing','productive')">Writing</button>
+        </div>
+        <div class="db" id="detail-block"><div class="fl" id="detail-label"></div><div id="detail-inner"></div></div>
+        <div class="db db-purple" id="novelty-block">
+          <div class="fl">É conteúdo novo ou já visto antes?</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="novelty-inner">
+            <button class="eb" onclick="selNovelty(this,'new')">Conteúdo novo</button>
+            <button class="eb" onclick="selNovelty(this,'seen')">Já vi antes</button>
+          </div>
+        </div>
+        <div class="db db-amber" id="exp-block">
+          <div class="fl">É a primeira vez com esse material?</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="exp-inner">
+            <button class="eb" onclick="selExp(this,'first')">Primeira vez</button>
+            <button class="eb" onclick="selExp(this,'seen')">Já vi antes</button>
+            <button class="eb" onclick="selExp(this,'deliberate')">Revisando de propósito</button>
+          </div>
+        </div>
+        <div class="fl">Como você estudou?</div>
+        <div style="margin-bottom:6px"><span class="tl tl-a">Técnicas ativas</span></div>
+        <div class="pills" id="tech-active">
+          <button class="pill" data-type="active" data-name="Flashcard / Anki" data-term="spaced repetition" onclick="selTech(this)">Flashcard / Anki <span style="font-size:11px;opacity:.55">spaced repetition</span></button>
+          <button class="pill" data-type="active" data-name="Me testei" data-term="retrieval practice" onclick="selTech(this)">Me testei <span style="font-size:11px;opacity:.55">retrieval practice</span></button>
+          <button class="pill" data-type="active" data-name="Expliquei em voz alta" data-term="self-explanation" onclick="selTech(this)">Expliquei em voz alta <span style="font-size:11px;opacity:.55">self-explanation</span></button>
+          <button class="pill" data-type="active" data-name="Escrevi / traduzi sem olhar" data-term="free recall" onclick="selTech(this)">Escrevi / traduzi sem olhar <span style="font-size:11px;opacity:.55">free recall</span></button>
+        </div>
+        <div style="margin-bottom:6px"><span class="tl tl-s">Semi-ativa</span></div>
+        <div class="pills" id="tech-semi">
+          <button class="pill" data-type="semi" data-name="Shadowing" data-term="shadowing" onclick="selTech(this)">Shadowing <span style="font-size:11px;opacity:.55">shadowing</span></button>
+          <button class="pill" data-type="semi" data-name="Pratiquei com alguém" data-term="interaction" onclick="selTech(this)">Pratiquei com alguém <span style="font-size:11px;opacity:.55">interaction</span></button>
+        </div>
+        <div style="margin-bottom:6px"><span class="tl tl-p">Técnicas passivas</span></div>
+        <div class="pills" id="tech-passive">
+          <button class="pill" data-type="passive" data-name="Assisti / ouvi conteúdo" data-term="extensive listening" onclick="selTech(this)">Assisti / ouvi <span style="font-size:11px;opacity:.55">extensive listening</span></button>
+          <button class="pill" data-type="passive" data-name="Li um texto" data-term="extensive reading" onclick="selTech(this)">Li um texto <span style="font-size:11px;opacity:.55">extensive reading</span></button>
+          <button class="pill" data-type="passive" data-name="Reli minhas anotações" data-term="passive review" onclick="selTech(this)">Reli anotações <span style="font-size:11px;opacity:.55">passive review</span></button>
+        </div>
+        <div class="fl">Quando foi a hora de usar, o que aconteceu?</div>
+        <div class="rec-row" id="rec-btns">
+          <button class="rb" onclick="selRec(this,2,'ind')">Lembrei sozinho, sem precisar pensar</button>
+          <button class="rb" onclick="selRec(this,2,'eff')">Lembrei, mas precisei de esforço</button>
+          <button class="rb" onclick="selRec(this,1,'part')">Só lembrei depois de ver ou ouvir de novo</button>
+          <button class="rb" onclick="selRec(this,0,'fail')">Não lembrei</button>
+        </div>
+        <div class="fl">Quanto tempo?</div>
+        <div style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap">
+          <button class="tc" onclick="selTime(this,15)">15 min</button>
+          <button class="tc" onclick="selTime(this,30)">30 min</button>
+          <button class="tc" onclick="selTime(this,45)">45 min</button>
+          <button class="tc" onclick="selTime(this,60)">60 min</button>
+          <button class="tc" onclick="selTime(this,90)">90+ min</button>
+        </div>
+        <div class="fl">Como foi a sessão?</div>
+        <div class="mood-row">
+          <button class="mb" onclick="selMood(this,'hard')"><span style="font-size:20px">&#128543;</span>Difícil</button>
+          <button class="mb" onclick="selMood(this,'ok')"><span style="font-size:20px">&#128528;</span>OK</button>
+          <button class="mb" onclick="selMood(this,'easy')"><span style="font-size:20px">&#128512;</span>Fácil</button>
+        </div>
+        <button class="submit-btn" id="submit-btn" onclick="submitSession()" disabled>Salvar sessão</button>
+      </div>
+    </div>
+  </div>
+  <div id="tab-review" class="section"><div id="review-content"></div></div>
+  <div id="tab-pattern" class="section"><div id="pattern-content"></div></div>
+  <div id="tab-report" class="section"><div id="report-content"></div></div>
+</div>
+
+<script>
+const DETAIL_CFG={
+  Vocabulário:{type:'text',label:'Qual vocabulário você estudou?',placeholder:'Ex: phrasal verbs de trabalho, palavras do episódio 3...'},
+  Gramática:{type:'text',label:'Qual estrutura gramatical?',placeholder:'Ex: present perfect, reported speech, conditionals...'},
+  Pronúncia:{type:'mixed',label:'Qual foi o foco?',options:['Sons específicos','Ritmo e entonação','Redução e linking','Outro'],placeholder:'Especifique se quiser...'},
+  Listening:{type:'mixed',label:'Onde você praticou?',options:['Podcast','YouTube','Série / filme','Aula','Música','Outro'],placeholder:'Nome do podcast, série, canal...'},
+  Reading:{type:'mixed',label:'O que você leu?',options:['Artigo','Livro','Post / rede social','Legenda','Material do curso','Outro'],placeholder:'Nome ou tema do que leu...'},
+  Speaking:{type:'mixed',label:'Como você praticou?',options:['Com professor','Com nativo','Sozinho gravando','Shadowing oral','Outro'],placeholder:'Detalhe se quiser...'},
+  Writing:{type:'mixed',label:'O que você escreveu?',options:['Journaling','Exercício do curso','Tradução','Post / mensagem','Outro'],placeholder:'Detalhe se quiser...'}
+};
+const TECH_COMPAT={
+  Vocabulário:['Flashcard / Anki','Me testei','Escrevi / traduzi sem olhar'],
+  Gramática:['Me testei','Expliquei em voz alta','Escrevi / traduzi sem olhar'],
+  Pronúncia:['Shadowing','Expliquei em voz alta','Pratiquei com alguém'],
+  Listening:['Assisti / ouvi conteúdo','Me testei'],
+  Reading:['Li um texto','Me testei'],
+  Speaking:['Pratiquei com alguém','Shadowing','Expliquei em voz alta'],
+  Writing:['Escrevi / traduzi sem olhar','Me testei']
+};
+const TECH_K={'Flashcard / Anki':1.20,'Me testei':1.20,'Expliquei em voz alta':1.30,'Escrevi / traduzi sem olhar':1.20,'Shadowing':1.35,'Pratiquei com alguém':1.35,'Assisti / ouvi conteúdo':1.10,'Li um texto':1.10,'Reli minhas anotações':0.70,'Assisti / ouvi':1.10,'Reli anotações':0.70};
+const D_INIT={Vocabulário:3,Gramática:6,Pronúncia:4,Listening:5,Reading:5,Speaking:8,Writing:8};
+const REFL_MAP={
+  Listening:{hard:'O que travou mais: velocidade, vocabulário ou sotaque?',ok:'O que você notou nesse material que não havia percebido antes?',easy:'Você está pronto para algo mais desafiador. O que seria o próximo passo?'},
+  Reading:{hard:'O que dificultou a leitura: vocabulário, estrutura ou tema?',ok:'Que estrutura ou expressão te chamou atenção?',easy:'Se fosse resumir em duas frases agora, conseguiria?'},
+  Vocabulário:{hard:'Quais palavras ainda não estão claras? Consegue criar uma frase com elas?',ok:'Consegue criar uma frase de cabeça com o que aprendeu hoje?',easy:'Em que situação real você usaria esse vocabulário?'},
+  Gramática:{hard:'Você já viu essa estrutura em algum lugar antes sem perceber?',ok:'Consegue criar um exemplo seu, não do livro, com essa estrutura?',easy:'Que erro você costumava cometer que essa regra explica?'},
+  Pronúncia:{hard:'Qual som específico ainda não saiu natural?',ok:'Quando você ouve um nativo, consegue notar esse padrão agora?',easy:'Você gravou sua voz hoje? Se não, grave uma frase e ouça.'},
+  Speaking:{hard:'Que estrutura você quis usar mas não conseguiu?',ok:'Houve algum momento em que você pausou para pensar demais?',easy:'O que fluiu hoje que antes precisava de esforço?'},
+  Writing:{hard:'Que parte foi mais difícil: vocabulário, estrutura ou organização?',ok:'Releia o que escreveu. Há algo que você mudaria agora?',easy:'Você escreveu de forma mais natural do que antes?'}
+};
+
+function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
+function computeR(t,S){return Math.exp(-t/S);}
+function computeQ(rec,eff){return clamp(2*rec-eff+2,0,5);}
+function getK(tech){return TECH_K[tech]||1.0;}
+function updateD(D,Q){return clamp(D+0.2*(3-Q),1,10);}
+function updateSFail(S){return Math.max(1.0,S*0.45);}
+function updateSSuccess(S,R,Q,K,D){return S*(1+1.5*(1-R)*(0.6+0.2*Q)*K/Math.sqrt(D));}
+function deriveState(rc,S){if(rc===0)return'NOVO';if(S<7)return'CONSOLIDACAO';if(S<30)return'RETENCAO';if(S<120)return'LONGO_PRAZO';return'DOMINIO';}
+function targetR(state){return{NOVO:.95,CONSOLIDACAO:.90,RETENCAO:.85,LONGO_PRAZO:.80,DOMINIO:.80}[state]||.85;}
+function nextInterval(S,Rt){return clamp(-S*Math.log(Rt),.5,365);}
+
+function runMotor(item,rec,eff,tech,now){
+  const S=item.S||1.0,D=item.D||5,lastAt=item.lastAt||null,rc=item.reviewCount||0,lc=item.lapseCount||0;
+  const t=lastAt?(now-lastAt)/86400000:0;
+  const R=computeR(t,S),Q=computeQ(rec,eff),K=getK(tech);
+  const Dnew=updateD(D,Q),Snew=rec===0?updateSFail(S):updateSSuccess(S,R,Q,K,D);
+  const rcNew=rc+1,lcNew=rec===0?lc+1:lc;
+  const state=deriveState(rcNew,Snew),Rt=targetR(state);
+  const interval=nextInterval(Snew,Rt);
+  return{S:Snew,D:Dnew,lastAt:now,reviewCount:rcNew,lapseCount:lcNew,state,interval:Math.round(interval),nextAt:now+interval*86400000};
+}
+
+let st={content:null,contentFamily:null,detailSource:null,detailText:'',exposure:null,novelty:null,tech:null,techTerm:null,techType:null,time:null,mood:null,rec:null,recVariant:null};
+let revSt={sessionIdx:null,rec:null,recVariant:null,tech:null,techType:null,time:null,mood:null};
+let pending=null,editingIndex=null,deleteIndex=null;
+let sessions=[];
+try{sessions=JSON.parse(localStorage.getItem('core_v6')||'[]')}catch(e){sessions=[]}
+function save(){try{localStorage.setItem('core_v6',JSON.stringify(sessions))}catch(e){}}
+
+function daysSince(ts){return Math.floor((Date.now()-ts)/86400000);}
+function sameDay(ts){const d=new Date(ts),n=new Date();return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate();}
+function pickCompatTech(content,exclude){return(TECH_COMPAT[content]||[]).find(t=>t!==exclude)||'Me testei';}
+
+function checkGapBanner(){
+  const b=document.getElementById('gap-banner');
+  if(!sessions.length){b.style.display='none';return;}
+  const days=daysSince(sessions[sessions.length-1].date);
+  if(days>=7){b.innerHTML='<strong>Você ficou '+days+' dias sem registrar.</strong> Revise com intervalos menores desta vez. O esquecimento foi maior que o planejado.';b.style.display='block';}
+  else b.style.display='none';
+}
+
+function dismissOnboard(){localStorage.setItem('core_onboard','done');document.getElementById('onboard-overlay').classList.remove('vis');}
+
+function selContent(el,val,family){
+  document.querySelectorAll('#content-pills .pill').forEach(p=>p.classList.remove('sel','psel','ssel'));
+  el.classList.add('sel');
+  st.content=val;st.contentFamily=family;st.detailSource=null;st.detailText='';st.exposure=null;st.novelty=null;
+  renderDetail(val);
+  if(family==='productive'){document.getElementById('novelty-block').classList.add('vis');document.getElementById('exp-block').classList.remove('vis');st.exposure='n/a';}
+  else{document.getElementById('novelty-block').classList.remove('vis');st.novelty='n/a';document.getElementById('exp-block').classList.add('vis');}
+  document.querySelectorAll('.eb').forEach(x=>x.classList.remove('sel'));
+  checkReady();
+}
+
+function renderDetail(c){
+  const cfg=DETAIL_CFG[c];
+  document.getElementById('detail-label').textContent=cfg.label;
+  let h='';
+  if(cfg.type==='text'){h='<input class="di" type="text" placeholder="'+cfg.placeholder+'" oninput="st.detailText=this.value;checkReady()">';}
+  else{
+    h='<div class="sp">';
+    cfg.options.forEach(function(o){h+='<button type="button" class="spill" onclick="selSrc(this,\''+o.replace(/'/g,"\\'")+'\')">' +o+'</button>';});
+    h+='</div><input class="di" type="text" placeholder="'+cfg.placeholder+'" oninput="st.detailText=this.value">';
+  }
+  document.getElementById('detail-inner').innerHTML=h;
+  document.getElementById('detail-block').classList.add('vis');
+}
+
+function selSrc(el,val){document.querySelectorAll('.spill').forEach(p=>p.classList.remove('sel'));el.classList.add('sel');st.detailSource=val;checkReady();}
+function selNovelty(el,val){document.querySelectorAll('#novelty-block .eb').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');st.novelty=val;checkReady();}
+function selExp(el,val){document.querySelectorAll('#exp-inner .eb').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');st.exposure=val;checkReady();}
+function selTech(el){
+  document.querySelectorAll('#tech-active .pill,#tech-semi .pill,#tech-passive .pill').forEach(p=>p.classList.remove('sel','psel','ssel'));
+  var t=el.dataset.type;
+  el.classList.add(t==='active'?'sel':t==='semi'?'ssel':'psel');
+  st.tech=el.dataset.name;st.techTerm=el.dataset.term;st.techType=t;checkReady();
+}
+function selTime(el,val){document.querySelectorAll('.tc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');st.time=val;checkReady();}
+function selMood(el,val){document.querySelectorAll('.mb').forEach(b=>b.classList.remove('sh','so','se'));el.classList.add('s'+val[0]);st.mood=val;checkReady();}
+function selRec(el,val,variant){document.querySelectorAll('#rec-btns .rb').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');st.rec=val;st.recVariant=variant;checkReady();}
+
+function checkReady(){
+  var cfg=DETAIL_CFG[st.content];
+  var dOk=true;
+  if(cfg){if(cfg.type==='text')dOk=st.detailText.trim().length>0;else dOk=!!st.detailSource;}
+  var ok=st.content&&dOk&&(st.novelty!==null)&&(st.exposure!==null)&&st.tech&&st.time&&st.mood&&(st.rec!==null);
+  document.getElementById('submit-btn').disabled=!ok;
+}
+
+function moodToEff(mood){return mood==='hard'?2:mood==='ok'?1:0;}
+function recForInput(mood){return mood==='hard'?0:mood==='ok'?1:2;}
+
+function buildMotorInput(s){
+  var rec=s.contentFamily==='input'?recForInput(s.mood):s.rec;
+  var eff=moodToEff(s.mood);
+  var isPassive=s.techType==='passive';
+  var finalRec=isPassive&&(s.novelty==='new'||s.exposure==='first')?Math.min(rec,1):rec;
+  return{rec:finalRec,eff:eff,tech:s.tech};
+}
+
+function getOrInitItem(content){
+  var key='item_'+content;
+  var item=null;
+  try{item=JSON.parse(localStorage.getItem(key));}catch(e){}
+  if(!item)item={S:1.0,D:D_INIT[content]||5,lastAt:null,reviewCount:0,lapseCount:0,state:'NOVO'};
+  return{key:key,item:item};
+}
+function saveItem(key,item){try{localStorage.setItem(key,JSON.stringify(item));}catch(e){}}
+
+function getRec(s,allSessions){
+  var isInput=s.contentFamily==='input',isPassive=s.techType==='passive';
+  var todaySame=allSessions.filter(function(x){return x.content===s.content&&sameDay(x.date);});
+  var prevSessions=allSessions.filter(function(x){return x.content===s.content;});
+  var last=prevSessions.slice(-2)[0]||null;
+  var daysSinceLast=last?daysSince(last.date):null;
+  var recent6=allSessions.slice(-6);
+  var inputC=recent6.filter(function(x){return['Listening','Reading'].includes(x.content);}).length;
+  var outputC=recent6.filter(function(x){return['Speaking','Writing'].includes(x.content);}).length;
+  var sameFreq=allSessions.slice(-6).filter(function(x){return x.content===s.content;}).length;
+  var last4w=allSessions.filter(function(x){return daysSince(x.date)<=28&&x.content===s.content;});
+  var stagnant=last4w.length>=4&&!last4w.some(function(x){return x.mood==='easy';});
+  var shortHard=s.time===15&&s.mood==='hard'&&['Gramática','Writing','Speaking'].includes(s.content);
+  var altTech=pickCompatTech(s.content,s.tech);
+  var compat=TECH_COMPAT[s.content]||[];
+  var itemData=getOrInitItem(s.content);
+  var mi=buildMotorInput(s);
+  var updated=runMotor(itemData.item,mi.rec,mi.eff,mi.tech,s.date);
+  saveItem(itemData.key,updated);
+  var days=updated.interval;
+
+  if(todaySame.length>0&&s.mood==='hard'){
+    var det=buildDetail(s);
+    var label=det?'"'+det+'" ('+s.content+')':s.content;
+    return{urgency:'rest',restTitle:'Você já estudou '+label+' mais de uma vez hoje',reason:'Você se dedicou e isso conta. Mas o cérebro não aprende só enquanto você estuda: ele consolida enquanto você dorme. Continuar agora não vai acelerar o processo.',action:'Descanse. Amanhã você vai perceber a diferença.',suggestedTech:null,days:1,interval:1,restTip:true};}
+
+  if(isInput){
+    if(s.mood==='hard'&&s.exposure==='first')return{urgency:'level',reason:'Esse material estava acima do seu nível agora. Isso não é problema, é informação. O cérebro só adquire o que consegue processar.',action:'Encontre algo sobre o mesmo tema onde você entenda a maior parte sem esforço. Quando isso estiver fácil, volte para este.',suggestedTech:s.tech,days:0,interval:0};
+    if(s.mood==='hard')return{urgency:'level',reason:'Você já teve contato com esse material antes e ainda está difícil. Isso geralmente significa que o nível está alto demais para o momento.',action:'Tente uma versão mais simples do mesmo conteúdo antes de continuar.',suggestedTech:null,days:0,interval:0};
+    if(s.mood==='ok'&&s.exposure==='deliberate'){var iv=daysSinceLast?Math.max(1,Math.floor(daysSinceLast*.6)):2;return{urgency:'today',reason:'Você está revisando de propósito e ainda não está fácil. Isso significa que o intervalo entre as revisões está longo demais.',action:'Volte a esse material mais cedo do que planejava. Desta vez, preste atenção nas partes que você passa rápido.',suggestedTech:altTech,days:iv,interval:iv};}
+    if(s.mood==='ok')return{urgency:'today',reason:'Material no nível certo. A segunda vez que você ouve ou lê algo sempre rende mais do que a primeira, porque o cérebro já sabe o que procurar.',action:'Volte a esse material em '+days+' dias e você vai notar estruturas que não percebeu hoje.',suggestedTech:s.tech,days:days,interval:days};
+    if(s.mood==='easy'&&s.exposure==='deliberate')return{urgency:'week',reason:'Esse material está consolidado. Você revisou de propósito e foi fácil.',action:'Hora de avançar para algo um pouco mais desafiador sobre o mesmo tema.',suggestedTech:null,days:days,interval:days};
+    return{urgency:'week',reason:'Esse material está abaixo do seu nível atual. Isso não é ruim, significa que você progrediu.',action:'Busque algo sobre o mesmo tema que traga um pouco mais de desafio.',suggestedTech:null,days:days,interval:days};
+  }
+
+  if(isPassive&&s.mood==='hard')return{urgency:'level',reason:'Você usou uma técnica passiva num conteúdo que ainda está difícil. Antes de se testar, confirme que o conteúdo faz sentido para você.',action:'Releia, reassista, ou procure uma explicação mais simples. Só depois passe para uma técnica ativa.',suggestedTech:compat[0]||'Me testei',days:days,interval:days};
+  if(isPassive&&s.mood==='easy')return{urgency:'today',reason:'Pareceu fácil, mas você usou uma técnica passiva. Reconhecer algo quando você vê é diferente de conseguir lembrar sozinho.',action:'Antes de avançar, feche tudo e escreva sem olhar tudo o que lembra desta sessão. Esse é o teste real.',suggestedTech:'Escrevi / traduzi sem olhar',days:0,interval:0};
+  if(isPassive)return{urgency:'today',reason:'Você consumiu o conteúdo mas não se testou. O cérebro retém muito mais quando precisa recuperar a informação do que quando só a recebe.',action:'Na próxima sessão, use uma técnica onde você tenta lembrar antes de olhar a resposta.',suggestedTech:compat[0]||'Me testei',days:1,interval:1};
+
+  if(s.rec===2&&s.recVariant==='ind'&&s.mood==='easy')return{urgency:'week',reason:'Lembrou sozinho e sem esforço. Isso é sinal de que o conteúdo está se consolidando.',action:'Não revise tão cedo. Quanto mais você espera, dentro do limite, mais forte fica a memória quando você revisar. Próxima revisão em '+days+' dias.',suggestedTech:compat[0],days:days,interval:days};
+  if(s.rec===2&&s.recVariant==='eff')return{urgency:'today',reason:'Você lembrou, mas precisou trabalhar para isso. O conteúdo ainda está em consolidação.',action:'Continue com a mesma técnica por mais algumas sessões antes de espaçar. É exatamente esse esforço que está formando a memória.',suggestedTech:s.tech,days:days,interval:days};
+  if(s.rec===1)return{urgency:'today',reason:'Você lembrou parte, mas precisou de apoio para completar. Isso significa que o conteúdo ainda não está consolidado.',action:'Na próxima sessão, troque a técnica. Um ângulo diferente ajuda o cérebro a fixar o que ainda está escorregando.',suggestedTech:altTech,days:days,interval:days};
+  if(s.rec===0&&s.novelty==='seen')return{urgency:'today',reason:'Você não lembrou e o conteúdo já havia sido estudado antes. Isso indica que a técnica atual não está funcionando para esse conteúdo específico.',action:'Amanhã, tente uma abordagem diferente.',suggestedTech:altTech,days:1,interval:1};
+  if(s.rec===0&&s.novelty==='new')return{urgency:'today',reason:'Você não lembrou, mas o conteúdo é novo, então isso é completamente normal. O cérebro precisa de múltiplos contatos antes de consolidar algo novo.',action:'Volte amanhã com a mesma técnica.',suggestedTech:s.tech,days:1,interval:1};
+  if(shortHard)return{urgency:'alert',reason:'15 minutos não é suficiente para processar um conteúdo difícil.',action:'Sua próxima sessão de '+s.content+' precisa de pelo menos 30 minutos para que o processamento real aconteça.',suggestedTech:compat[0]||s.tech,days:days,interval:days};
+  if(s.time>=90)return{urgency:'alert',reason:'Sessões acima de 90 minutos têm retorno decrescente. O cérebro começa a reter menos na segunda metade.',action:'Da próxima vez, divida em dois blocos. E revise o que você estudou depois dos 45 minutos desta sessão.',suggestedTech:compat[0]||'Me testei',days:1,interval:1};
+  if(sameFreq>=3)return{urgency:'alert',reason:'Você está concentrando muito estudo em '+s.content+'. O cérebro aprende melhor quando precisa alternar entre temas diferentes.',action:'Na próxima sessão, misture com outro conteúdo.',suggestedTech:null,days:days,interval:days};
+  if(inputC>=3&&outputC===0)return{urgency:'alert',reason:'Suas últimas sessões foram quase todas de consumo, ouvindo e lendo. Isso é importante, mas não basta. O cérebro precisa produzir a língua para desenvolver precisão.',action:'Na próxima sessão, pratique Speaking ou Writing.',suggestedTech:'Pratiquei com alguém',days:1,interval:1};
+  if(stagnant)return{urgency:'alert',reason:'Você está estudando '+s.content+' há mais de um mês sem uma sessão fácil. Algo no processo atual não está gerando progresso visível.',action:'Hora de mudar. Tente uma técnica diferente ou um material diferente.',suggestedTech:altTech,days:days,interval:days};
+  if(daysSinceLast&&s.exposure==='deliberate'&&s.mood==='hard'){var sh=Math.max(1,Math.floor(daysSinceLast*.5));return{urgency:'today',reason:'Você revisou de propósito e ainda está difícil. O intervalo entre as revisões está longo demais e o esquecimento está superando o aprendizado.',action:'Volte a esse conteúdo mais cedo.',suggestedTech:altTech,days:sh,interval:sh};}
+  return{urgency:'week',reason:'Sessão registrada com técnica ativa.',action:'Volte a esse conteúdo em '+days+' dias com uma técnica diferente. Variar o ângulo ajuda o cérebro a criar conexões mais sólidas.',suggestedTech:compat[1]||'Me testei',days:days,interval:days};
+}
+
+function getReflQ(s){var m=REFL_MAP[s.content];return m?m[s.mood]:null;}
+
+function submitSession(){
+  var allBefore=editingIndex!==null?sessions.filter(function(_,i){return i!==editingIndex;}):sessions;
+  var rec=getRec(st,allBefore);
+  var session=Object.assign({},st,{date:editingIndex!==null?sessions[editingIndex].date:Date.now(),recommendation:rec,reviewDate:Date.now()+rec.days*86400000,reflection:'',done:false});
+  if(editingIndex!==null){sessions[editingIndex]=session;editingIndex=null;}
+  else sessions.push(session);
+  pending=session;save();
+  var q=getReflQ(pending);
+  if(q&&!session.reflection){
+    document.getElementById('refl-q').textContent=q;
+    document.getElementById('refl-input').value='';
+    document.getElementById('form-body').style.display='none';
+    document.getElementById('refl-overlay').classList.add('vis');
+  }else finishSession(false);
+}
+
+function finishSession(saveR){
+  if(saveR&&pending){var t=document.getElementById('refl-input').value.trim();if(t){var idx=sessions.indexOf(pending);if(idx>=0)sessions[idx].reflection=t;}}
+  pending=null;
+  document.getElementById('refl-overlay').classList.remove('vis');
+  document.getElementById('form-body').style.display='';
+  resetForm();save();switchTab('review');
+}
+
+function resetForm(){
+  document.querySelectorAll('.pill,.tc,.mb,.spill,.eb,.rb').forEach(function(el){el.classList.remove('sel','psel','ssel','sh','so','se');});
+  ['detail-block','novelty-block','exp-block'].forEach(function(id){document.getElementById(id).classList.remove('vis');});
+  st={content:null,contentFamily:null,detailSource:null,detailText:'',exposure:null,novelty:null,tech:null,techTerm:null,techType:null,time:null,mood:null,rec:null,recVariant:null};
+  document.getElementById('submit-btn').disabled=true;
+  document.getElementById('submit-btn').textContent='Salvar sessão';
+  editingIndex=null;
+}
+
+function openReviewed(idx){
+  var s=sessions[idx];
+  revSt={sessionIdx:idx,rec:null,recVariant:null,tech:null,techType:null,time:null,mood:null};
+  document.getElementById('rev-title').textContent=s.content;
+  document.getElementById('rev-detail').textContent=buildDetail(s)||'';
+  document.querySelectorAll('#rev-rec-btns .rb,#rev-tech-pills .pill,#rev-time-chips .tc,#rev-mood-btns .mb').forEach(function(el){el.classList.remove('sel','psel','ssel','sh','so','se');});
+  document.getElementById('rev-submit').disabled=true;
+  document.getElementById('form-body').style.display='none';
+  document.getElementById('reviewed-overlay').classList.add('vis');
+}
+function cancelReviewed(){document.getElementById('reviewed-overlay').classList.remove('vis');document.getElementById('form-body').style.display='';}
+function selRevRec(el,val,variant){document.querySelectorAll('#rev-rec-btns .rb').forEach(function(b){b.classList.remove('sel');});el.classList.add('sel');revSt.rec=val;revSt.recVariant=variant;checkRevReady();}
+function selRevTech(el){document.querySelectorAll('#rev-tech-pills .pill').forEach(function(p){p.classList.remove('sel','psel','ssel');});var t=el.dataset.type;el.classList.add(t==='active'?'sel':t==='semi'?'ssel':'psel');revSt.tech=el.dataset.name;revSt.techType=t;checkRevReady();}
+function selRevTime(el,val){document.querySelectorAll('#rev-time-chips .tc').forEach(function(c){c.classList.remove('sel');});el.classList.add('sel');revSt.time=val;checkRevReady();}
+function selRevMood(el,val){document.querySelectorAll('#rev-mood-btns .mb').forEach(function(b){b.classList.remove('sh','so','se');});el.classList.add('s'+val[0]);revSt.mood=val;checkRevReady();}
+function checkRevReady(){document.getElementById('rev-submit').disabled=!(revSt.rec!==null&&revSt.tech&&revSt.time&&revSt.mood);}
+
+function submitReviewed(){
+  var idx=revSt.sessionIdx,s=sessions[idx];
+  var eff=moodToEff(revSt.mood);
+  var itemData=getOrInitItem(s.content);
+  var updated=runMotor(itemData.item,revSt.rec,eff,revSt.tech,Date.now());
+  saveItem(itemData.key,updated);
+  sessions[idx].done=true;
+  sessions[idx].reviewDate=Date.now()+updated.interval*86400000;
+  sessions[idx].recommendation=Object.assign({},sessions[idx].recommendation,{days:updated.interval,interval:updated.interval});
+  sessions[idx].lastRevised=Date.now();
+  save();
+  document.getElementById('reviewed-overlay').classList.remove('vis');
+  document.getElementById('form-body').style.display='';
+  renderReview();
+}
+
+function editSession(idx){
+  var s=sessions[idx];editingIndex=idx;
+  document.getElementById('submit-btn').textContent='Atualizar sessão';
+  switchTab('register');
+  setTimeout(function(){
+    var cpBtn=Array.from(document.querySelectorAll('#content-pills .pill')).find(function(b){return b.textContent.trim().startsWith(s.content);});
+    if(cpBtn)cpBtn.click();
+    setTimeout(function(){
+      if(s.detailSource){var sp=Array.from(document.querySelectorAll('.spill')).find(function(b){return b.textContent.trim()===s.detailSource;});if(sp)sp.click();}
+      if(s.detailText){var di=document.querySelector('#detail-inner input.di');if(di){di.value=s.detailText;st.detailText=s.detailText;}}
+      var tb=Array.from(document.querySelectorAll('#tech-active .pill,#tech-semi .pill,#tech-passive .pill')).find(function(b){return b.dataset.name===s.tech;});if(tb)tb.click();
+      var timeB=Array.from(document.querySelectorAll('.tc')).find(function(b){return b.onclick&&b.onclick.toString().includes(','+s.time+')');});if(timeB)timeB.click();
+      document.querySelectorAll('.mb').forEach(function(b){b.classList.remove('sh','so','se');});
+      var mb=Array.from(document.querySelectorAll('.mb')).find(function(b){return b.onclick&&b.onclick.toString().includes("'"+s.mood+"'");});if(mb)mb.classList.add('s'+s.mood[0]);st.mood=s.mood;
+      if(s.rec!==null&&s.rec!==undefined){var rb=Array.from(document.querySelectorAll('#rec-btns .rb')).find(function(b){return b.onclick&&b.onclick.toString().includes(','+s.rec+',');});if(rb)rb.click();}
+      checkReady();
+    },60);
+  },60);
+}
+
+function startDelete(idx){deleteIndex=idx;document.getElementById('confirm-overlay').classList.add('vis');document.getElementById('form-body').style.display='none';}
+function cancelDelete(){deleteIndex=null;document.getElementById('confirm-overlay').classList.remove('vis');document.getElementById('form-body').style.display='';}
+function confirmDelete(){if(deleteIndex!==null){sessions.splice(deleteIndex,1);save();deleteIndex=null;}document.getElementById('confirm-overlay').classList.remove('vis');document.getElementById('form-body').style.display='';switchTab('pattern');}
+
+function startDeleteInline(idx){
+  var el=document.getElementById('hist-'+idx);
+  if(!el)return;
+  var actions=el.querySelector('.si-actions');
+  actions.innerHTML='<button class="si-btn" onclick="cancelDeleteInline()">Cancelar</button>'+
+    '<button class="si-btn del" style="background:#FCEBEB;border-color:#F09595;color:#A32D2D" onclick="confirmDeleteInline('+idx+')">Confirmar</button>';
+}
+function cancelDeleteInline(){renderPattern();}
+function confirmDeleteInline(idx){sessions.splice(idx,1);save();renderPattern();}
+
+function buildDetail(s){var p=[];if(s.detailSource)p.push(s.detailSource);if(s.detailText)p.push(s.detailText);return p.join(' · ');}
+function intervalLabel(days){if(!days||days===0)return'hoje';if(days===1)return'amanhã';if(days<=7)return'em '+days+' dias';if(days<=30)return'em '+Math.round(days/7)+' semana'+(days>=14?'s':'');return'em '+Math.round(days/30)+' mês'+(days>=60?'es':'');}
+
+function renderRecCard(s,idx){
+  var urg=s.recommendation.urgency;
+  var labels={today:'Revisar hoje',week:'Essa semana',alert:'Atenção',level:'Diagnóstico de nível',rest:'Descanse hoje'};
+  var det=buildDetail(s);
+  var tech=s.recommendation.suggestedTech;
+  var tn=tech?tech.split('(')[0].trim():null;
+  var isDone=s.done&&s.lastRevised&&sameDay(s.lastRevised);
+  var badgeHtml='';
+  if(s.reviewDate){
+    var daysLeft=Math.round((s.reviewDate-Date.now())/86400000);
+    if(daysLeft<0){
+      var absDays=Math.abs(daysLeft);
+      badgeHtml='<span class="interval-badge" style="background:#FAEEDA;color:#BA7517;border-color:#EF9F27">Revisão pendente há '+absDays+' dia'+(absDays!==1?'s':'')+'</span>';
+    }else if(daysLeft===0){
+      badgeHtml='<span class="interval-badge" style="background:#E1F5EE;color:#085041;border-color:#5DCAA5">Revisar hoje</span>';
+    }else if(daysLeft===1){
+      badgeHtml='<span class="interval-badge">Revisar amanhã</span>';
+    }else{
+      var rd=new Date(s.reviewDate);
+      badgeHtml='<span class="interval-badge">Próxima revisão: '+rd.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+'</span>';
+    }
+  }
+  var html='<div class="rc '+urg+'"'+(isDone?' style="opacity:.5"':'')+'>'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:4px">'+
+    '<div class="rt '+urg+'">'+labels[urg]+'</div>'+
+    badgeHtml+
+    '</div>'+
+    '<div class="rtitle">'+(urg==='rest'?s.recommendation.restTitle:s.content)+'</div>'+
+    (det&&urg!=='rest'?'<div class="rdet">'+det+'</div>':'')+
+    '<div class="rdesc">'+s.recommendation.reason+'</div>'+
+    '<div class="ract">'+s.recommendation.action+'</div>'+
+    (urg==='rest'?'<div class="rest-tip"><strong>Enquanto isso:</strong> assista algo em inglês que você gosta, sem pressão de aprender nada. Isso também é aprendizado.</div>':'')+
+    (tn&&urg!=='rest'?'<div class="rtech">Use: <strong>'+tn+'</strong></div>':'')+
+    (s.reflection?'<div class="rrefl">"'+s.reflection+'"</div>':'')+
+    (urg!=='rest'&&!isDone?'<button class="done-btn" onclick="openReviewed('+idx+')">Marcar como revisado</button>':'')+
+    (isDone?'<div style="font-size:12px;color:#1D9E75;margin-top:8px;font-weight:500">Revisado hoje</div>':'')+
+    '</div>';
+  return html;
+}
+
+function renderReview(){
+  checkGapBanner();
+  if(!sessions.length){document.getElementById('review-content').innerHTML='<div class="empty-state"><div style="font-size:14px">Nenhuma sessão registrada ainda.</div><div style="font-size:13px;margin-top:6px">Registre sua primeira sessão para ver as recomendações.</div></div>';return;}
+  var now=Date.now();
+  var byUrg={rest:[],level:[],alert:[],today:[],week:[]};
+  sessions.forEach(function(s,i){
+    var u=s.recommendation.urgency;
+    if(u==='week'&&s.reviewDate<=now+86400000)byUrg.today.push({s:s,i:i});
+    else if(u==='week'&&s.reviewDate>now+86400000&&s.reviewDate<=now+7*86400000)byUrg.week.push({s:s,i:i});
+    else if(byUrg[u])byUrg[u].push({s:s,i:i});
+  });
+  var labels={rest:'Para hoje',level:'Diagnóstico de nível',alert:'Atenção',today:'Revisar hoje',week:'Revisar essa semana'};
+  var h='';
+  ['rest','level','alert','today','week'].forEach(function(u){if(byUrg[u].length){h+='<div class="sl">'+labels[u]+'</div>';byUrg[u].forEach(function(x){h+=renderRecCard(x.s,x.i);});}});
+  if(!h)h='<div class="empty-state"><div style="font-size:14px">Tudo em dia.</div><div style="font-size:13px;margin-top:6px">Nada para revisar agora.</div></div>';
+  document.getElementById('review-content').innerHTML=h;
+}
+
+function renderPattern(){
+  checkGapBanner();
+  if(!sessions.length){document.getElementById('pattern-content').innerHTML='<div class="empty-state"><div style="font-size:14px">Nenhum padrão ainda.</div><div style="font-size:13px;margin-top:6px">Registre algumas sessões para ver seus padrões.</div></div>';return;}
+  var total=sessions.length;
+  var passC=sessions.filter(function(s){return s.techType==='passive';}).length;
+  var actC=sessions.filter(function(s){return s.techType==='active';}).length;
+  var passPct=Math.round((passC/total)*100);
+  var actPct=Math.round((actC/total)*100);
+  var avgTime=Math.round(sessions.reduce(function(a,s){return a+s.time;},0)/total);
+  var cCount={};sessions.forEach(function(s){cCount[s.content]=(cCount[s.content]||0)+1;});
+  var most=Object.entries(cCount).sort(function(a,b){return b[1]-a[1];})[0];
+  var CONTENTS=['Vocabulário','Gramática','Pronúncia','Listening','Reading','Speaking','Writing'];
+
+  var h='<div class="pg">'+
+    '<div class="sc"><div class="sn">'+total+'</div><div class="slb">sessões registradas</div></div>'+
+    '<div class="sc"><div class="sn">'+avgTime+' min</div><div class="slb">média por sessão</div></div>'+
+    '<div class="sc"><div class="sn">'+actPct+'%</div><div class="slb">técnicas ativas</div></div>'+
+    '<div class="sc"><div class="sn">'+passPct+'%</div><div class="slb">técnicas passivas</div></div>'+
+    '</div>';
+
+  h+='<div class="sl">Progresso por conteúdo</div><div class="card"><div class="hmw">';
+  CONTENTS.forEach(function(c){
+    var cs=sessions.filter(function(s){return s.content===c;}).slice(-12);
+    h+='<div class="hmr"><div class="hml">'+c+'</div><div class="hmd">';
+    if(!cs.length)h+='<div class="dot dot-sm"></div>';
+    else cs.forEach(function(s){var cl=s.mood==='hard'?'dot-h':s.mood==='ok'?'dot-o':'dot-e';var sz=s.time<=15?'dot-sm':s.time<=45?'dot-md':'dot-lg';var d=new Date(s.date).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});h+='<div class="dot '+cl+' '+sz+'" title="'+d+' · '+s.time+'min"></div>';});
+    h+='</div></div>';
+  });
+  h+='<div class="hleg"><div class="li"><div class="ld" style="background:#E24B4A"></div>Difícil</div><div class="li"><div class="ld" style="background:#EF9F27"></div>OK</div><div class="li"><div class="ld" style="background:#1D9E75"></div>Fácil</div><div class="li"><div class="ld dot-sm" style="background:#999"></div>15min</div><div class="li"><div class="ld dot-md" style="background:#999"></div>45min</div><div class="li"><div class="ld dot-lg" style="background:#999"></div>60+min</div></div></div></div>';
+
+  var narc=buildNarrative(sessions,most,passPct,actPct);
+  if(narc)h+='<div class="narc">'+narc+'</div>';
+  if(sessions.length>=5&&passPct>60)h+='<div class="rc alert"><div class="rt alert">Padrão detectado</div><div class="rtitle">Muitas técnicas passivas</div><div class="rdesc">'+passPct+'% das suas sessões foram passivas. Equilibre com retrieval practice ou free recall.</div></div>';
+  if(most&&most[1]>=4)h+='<div class="rc alert"><div class="rt alert">Padrão detectado</div><div class="rtitle">Foco excessivo em '+most[0]+'</div><div class="rdesc">Intercale com outros conteúdos.</div></div>';
+  var r6=sessions.slice(-6);
+  var inpC=r6.filter(function(s){return['Listening','Reading'].includes(s.content);}).length;
+  var outC=r6.filter(function(s){return['Speaking','Writing'].includes(s.content);}).length;
+  if(inpC>=3&&outC===0)h+='<div class="rc alert"><div class="rt alert">Padrão detectado</div><div class="rtitle">Desequilíbrio input / output</div><div class="rdesc">Pratique Speaking ou Writing. Input sozinho não desenvolve precisão.</div></div>';
+
+  h+='<div class="sl">Histórico de sessões</div><div class="card" style="padding:.75rem 1rem">';
+  sessions.slice().reverse().forEach(function(s,ri){
+    var idx=sessions.length-1-ri;
+    var _dt=new Date(s.date);var d=_dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});var h_=_dt.getHours().toString().padStart(2,'0');var m_=_dt.getMinutes().toString().padStart(2,'0');var dt=d+' às '+h_+'h'+m_;
+    var det=buildDetail(s);
+    var bcls=s.techType==='active'?'ba':s.techType==='semi'?'bs':'bp';
+    var blbl=s.techType==='active'?'ativa':s.techType==='semi'?'semi-ativa':'passiva';
+    h+='<div class="si" id="hist-'+idx+'"><div style="flex:1;min-width:0"><div style="font-weight:500;color:#1a1a1a">'+s.content+(det?' <span style="font-weight:400;color:#666;font-size:12px">· '+det+'</span>':'')+'</div><div style="color:#666;font-size:12px;margin-top:2px">'+s.time+' min · '+dt+' · <span class="badge '+bcls+'">'+blbl+'</span></div></div><div class="si-actions"><button class="si-btn" onclick="editSession('+idx+')">Editar</button><button class="si-btn del" onclick="startDeleteInline('+idx+')">Apagar</button></div></div>';
+  });
+  h+='</div>';
+  document.getElementById('pattern-content').innerHTML=h;
+}
+
+function buildNarrative(sessions,most,passPct,actPct){
+  var CONTENTS=['Vocabulário','Gramática','Pronúncia','Listening','Reading','Speaking','Writing'];
+  var lines=[];
+  CONTENTS.forEach(function(c){
+    var cs=sessions.filter(function(s){return s.content===c;});
+    if(cs.length>=3){
+      var l3=cs.slice(-3).map(function(s){return s.mood;});
+      if((l3[0]==='hard'&&l3[2]==='ok')||(l3[0]==='ok'&&l3[2]==='easy'))lines.push('<strong>'+c+'</strong> está melhorando nas últimas sessões.');
+      if(l3.every(function(m){return m==='hard';}))lines.push('<strong>'+c+'</strong> está difícil há 3 sessões. Considere mudar a técnica ou o material.');
+    }
+  });
+  if(actPct>=70)lines.push('Você está usando técnicas ativas em <strong>'+actPct+'%</strong> das sessões. Excelente hábito.');
+  if(!lines.length&&sessions.length>=2)lines.push('Você tem <strong>'+sessions.length+'</strong> sessões registradas. Os padrões ficam mais claros com o tempo.');
+  return lines.slice(0,2).join(' ');
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+  var idx={register:0,review:1,pattern:2,report:3}[tab];
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='review')renderReview();
+  if(tab==='pattern')renderPattern();
+  if(tab==='report')renderReport();
+}
+
+if(!localStorage.getItem('core_onboard'))document.getElementById('onboard-overlay').classList.add('vis');
+checkGapBanner();
+
+function loadItems(){
+  var CONTENTS=['Vocabulário','Gramática','Pronúncia','Listening','Reading','Speaking','Writing'];
+  var items={};
+  CONTENTS.forEach(function(c){try{items[c]=JSON.parse(localStorage.getItem('item_'+c))||null;}catch(e){items[c]=null;}});
+  return items;
+}
+
+function renderReport(){
+  checkGapBanner();
+  var CONTENTS=['Vocabulário','Gramática','Pronúncia','Listening','Reading','Speaking','Writing'];
+  var stateLabels={NOVO:'Novo',CONSOLIDACAO:'Consolidação',RETENCAO:'Retenção',LONGO_PRAZO:'Longo prazo',DOMINIO:'Domínio'};
+  var statePct={NOVO:5,CONSOLIDACAO:25,RETENCAO:50,LONGO_PRAZO:75,DOMINIO:100};
+  var stateColors={NOVO:'#d0d0cb',CONSOLIDACAO:'#EF9F27',RETENCAO:'#1D9E75',LONGO_PRAZO:'#534AB7',DOMINIO:'#085041'};
+  var items=loadItems();
+
+  // 1. Mapa de domínio
+  var h='<div class="sl">Mapa de domínio por área</div><div class="card">';
+  CONTENTS.forEach(function(c){
+    var item=items[c];
+    var state=item?item.state:'NOVO';
+    var pct=statePct[state]||5;
+    var color=stateColors[state]||'#d0d0cb';
+    var label=stateLabels[state]||state;
+    var sessCount=sessions.filter(function(s){return s.content===c;}).length;
+    var sessLabel=sessCount===0?'nenhuma sessão':sessCount===1?'1 sessão':sessCount+' sessões';
+    h+='<div style="margin-bottom:1.1rem">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">'+
+      '<span style="font-size:13px;font-weight:500;color:#1a1a1a">'+c+'</span>'+
+      '<span style="font-size:11px;color:#999">'+sessLabel+'</span>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:8px">'+
+      '<div style="flex:1;height:7px;background:#f0f0eb;border-radius:4px;overflow:hidden">'+
+      '<div style="width:'+pct+'%;height:100%;background:'+color+';border-radius:4px"></div>'+
+      '</div>'+
+      '<span style="font-size:11px;color:#666;width:84px;text-align:right;flex-shrink:0">'+label+'</span>'+
+      '</div>'+
+      '</div>';
+  });
+  h+='</div>';
+
+  // 2. Já consolidado
+  var consolidated=CONTENTS.filter(function(c){var item=items[c];return item&&['RETENCAO','LONGO_PRAZO','DOMINIO'].includes(item.state);});
+  h+='<div class="sl">Já consolidado</div>';
+  if(consolidated.length){
+    h+='<div class="card">';
+    consolidated.forEach(function(c){
+      var item=items[c];
+      var lapsoLabel=item.lapseCount===1?'1 lapso':item.lapseCount+' lapsos';
+      var revLabel=item.reviewCount===1?'1 revisão':item.reviewCount+' revisões';
+      h+='<div class="si">'+
+        '<div style="flex:1;min-width:0">'+
+        '<div style="font-weight:500;color:#1a1a1a">'+c+'</div>'+
+        '<div style="font-size:12px;color:#666;margin-top:2px">'+revLabel+' · '+lapsoLabel+'</div>'+
+        '</div>'+
+        '<span class="badge ba">'+stateLabels[item.state]+'</span>'+
+        '</div>';
+    });
+    h+='</div>';
+  }else{
+    h+='<div class="narc">Nenhum conteúdo consolidado ainda. Continue registrando sessões.</div>';
+  }
+
+  // 3. Ainda frágil
+  var fragile=CONTENTS.filter(function(c){var item=items[c];return item&&(item.lapseCount>=3||(item.state==='NOVO'&&item.reviewCount>0));});
+  h+='<div class="sl">Ainda frágil</div>';
+  if(fragile.length){
+    h+='<div class="card">';
+    fragile.forEach(function(c){
+      var item=items[c];
+      var reason=item.lapseCount>=3?(item.lapseCount+' lapsos registrados'):'Estado inicial após '+(item.reviewCount===1?'1 revisão':item.reviewCount+' revisões');
+      h+='<div class="si">'+
+        '<div style="flex:1;min-width:0">'+
+        '<div style="font-weight:500;color:#1a1a1a">'+c+'</div>'+
+        '<div style="font-size:12px;color:#666;margin-top:2px">'+reason+'</div>'+
+        '</div>'+
+        '<span class="badge bp">Frágil</span>'+
+        '</div>';
+    });
+    h+='</div>';
+  }else{
+    h+='<div class="narc">Nenhum conteúdo identificado como frágil no momento.</div>';
+  }
+
+  // 4. Padrão de estudo
+  h+='<div class="sl">Padrão de estudo</div>';
+  if(sessions.length){
+    var totalMins=sessions.reduce(function(a,s){return a+s.time;},0);
+    var totalHours=(totalMins/60).toFixed(1);
+    var firstTs=sessions[0].date,lastTs=sessions[sessions.length-1].date;
+    var weekSpan=Math.max(1,Math.ceil((lastTs-firstTs)/(7*86400000)));
+    var avgPerWeek=(sessions.length/weekSpan).toFixed(1);
+
+    var daySet={};
+    sessions.forEach(function(s){
+      var d=new Date(s.date);
+      var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      daySet[key]=true;
+    });
+    var days=Object.keys(daySet).sort();
+    var maxStreak=days.length?1:0,cur=1;
+    for(var i=1;i<days.length;i++){
+      var diff=(new Date(days[i])-new Date(days[i-1]))/86400000;
+      if(diff===1){cur++;if(cur>maxStreak)maxStreak=cur;}else cur=1;
+    }
+
+    h+='<div class="pg">'+
+      '<div class="sc"><div class="sn">'+sessions.length+'</div><div class="slb">sessões no total</div></div>'+
+      '<div class="sc"><div class="sn">'+totalHours+'h</div><div class="slb">horas estudadas</div></div>'+
+      '<div class="sc"><div class="sn">'+avgPerWeek+'</div><div class="slb">sessões por semana</div></div>'+
+      '<div class="sc"><div class="sn">'+maxStreak+'</div><div class="slb">dias consecutivos</div></div>'+
+      '</div>';
+  }else{
+    h+='<div class="narc">Nenhuma sessão registrada ainda.</div>';
+  }
+
+  // 5. Exportar perfil
+  h+='<button class="submit-btn" id="export-btn" style="background:#534AB7;margin-bottom:1.5rem" onclick="exportProfile()">Exportar meu perfil</button>';
+
+  document.getElementById('report-content').innerHTML=h;
+}
+
+function exportProfile(){
+  var CONTENTS=['Vocabulário','Gramática','Pronúncia','Listening','Reading','Speaking','Writing'];
+  var stateLabels={NOVO:'Novo',CONSOLIDACAO:'Consolidação',RETENCAO:'Retenção',LONGO_PRAZO:'Longo prazo',DOMINIO:'Domínio'};
+  var items=loadItems();
+  var lines=[];
+
+  lines.push('=== PERFIL DE ESTUDOS ===');
+  lines.push('Gerado em: '+new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}));
+  lines.push('');
+
+  lines.push('--- ESTADO POR ÁREA ---');
+  CONTENTS.forEach(function(c){
+    var item=items[c];
+    if(!item){lines.push('• '+c+': nunca estudado');return;}
+    var revLabel=item.reviewCount===1?'1 revisão':item.reviewCount+' revisões';
+    var lapsoLabel=item.lapseCount===1?'1 lapso':item.lapseCount+' lapsos';
+    lines.push('• '+c+': '+stateLabels[item.state]+' ('+revLabel+', '+lapsoLabel+')');
+  });
+
+  if(sessions.length){
+    lines.push('');
+    lines.push('--- PADRÃO DE ESTUDO ---');
+    var totalMins=sessions.reduce(function(a,s){return a+s.time;},0);
+    lines.push('• Total de sessões: '+sessions.length);
+    lines.push('• Total de horas estudadas: '+(totalMins/60).toFixed(1)+'h');
+
+    var firstTs=sessions[0].date,lastTs=sessions[sessions.length-1].date;
+    var weekSpan=Math.max(1,Math.ceil((lastTs-firstTs)/(7*86400000)));
+    lines.push('• Média de sessões por semana: '+(sessions.length/weekSpan).toFixed(1));
+
+    var daySet={};
+    sessions.forEach(function(s){
+      var d=new Date(s.date);
+      var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      daySet[key]=true;
+    });
+    var days=Object.keys(daySet).sort();
+    var maxStreak=days.length?1:0,cur=1;
+    for(var i=1;i<days.length;i++){
+      var diff=(new Date(days[i])-new Date(days[i-1]))/86400000;
+      if(diff===1){cur++;if(cur>maxStreak)maxStreak=cur;}else cur=1;
+    }
+    lines.push('• Maior sequência de dias consecutivos: '+maxStreak);
+
+    var cCount={};
+    sessions.forEach(function(s){cCount[s.content]=(cCount[s.content]||0)+1;});
+    var sorted=Object.entries(cCount).sort(function(a,b){return b[1]-a[1];});
+    lines.push('• Conteúdo mais estudado: '+sorted[0][0]+' ('+sorted[0][1]+' sessões)');
+
+    var actC=sessions.filter(function(s){return s.techType==='active';}).length;
+    var passC=sessions.filter(function(s){return s.techType==='passive';}).length;
+    lines.push('• Uso de técnicas ativas: '+Math.round((actC/sessions.length)*100)+'%');
+    lines.push('• Uso de técnicas passivas: '+Math.round((passC/sessions.length)*100)+'%');
+
+    var hard=sessions.filter(function(s){return s.mood==='hard';}).length;
+    var ok=sessions.filter(function(s){return s.mood==='ok';}).length;
+    var easy=sessions.filter(function(s){return s.mood==='easy';}).length;
+    lines.push('• Sessões difíceis: '+hard+' | OK: '+ok+' | Fáceis: '+easy);
+  }
+
+  var strong=CONTENTS.filter(function(c){var item=items[c];return item&&['RETENCAO','LONGO_PRAZO','DOMINIO'].includes(item.state);});
+  lines.push('');
+  lines.push('--- PONTOS FORTES ---');
+  if(strong.length)strong.forEach(function(c){lines.push('• '+c+' ('+stateLabels[items[c].state]+')');});
+  else lines.push('• Nenhum conteúdo consolidado ainda.');
+
+  var fragile=CONTENTS.filter(function(c){var item=items[c];return item&&(item.lapseCount>=3||(item.state==='NOVO'&&item.reviewCount>0));});
+  lines.push('');
+  lines.push('--- PONTOS FRÁGEIS ---');
+  if(fragile.length)fragile.forEach(function(c){var item=items[c];lines.push('• '+c+' ('+item.lapseCount+' lapso'+(item.lapseCount!==1?'s':'')+')');});
+  else lines.push('• Nenhum conteúdo frágil identificado.');
+
+  var text=lines.join('\n');
+
+  function doFallback(){
+    var ta=document.createElement('textarea');
+    ta.value=text;ta.style.cssText='position:fixed;opacity:0;top:0;left:0';
+    document.body.appendChild(ta);ta.focus();ta.select();
+    try{document.execCommand('copy');showExportFeedback('Copiado!');}
+    catch(e){showExportFeedback('Erro ao copiar.');}
+    document.body.removeChild(ta);
+  }
+
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(function(){showExportFeedback('Copiado para a área de transferência!');}).catch(doFallback);
+  }else{doFallback();}
+}
+
+function showExportFeedback(msg){
+  var btn=document.getElementById('export-btn');
+  if(!btn)return;
+  var orig=btn.textContent;
+  btn.textContent=msg;btn.disabled=true;
+  setTimeout(function(){btn.textContent=orig;btn.disabled=false;},2200);
+}
+</script>
+</body>
+</html>
